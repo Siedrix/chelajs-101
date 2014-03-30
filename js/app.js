@@ -1,9 +1,8 @@
 /* jshint asi:true */
-/* global Backbone */
+/* global Backbone, _ */
 
-var app = window.app || {}
-var ENTER_KEY = 13;
-var ESC_KEY = 27;
+var app = window.app = {}
+var ENTER_KEY = 13
 
 $(function () {
   'use strict';
@@ -26,22 +25,64 @@ app.LinkRouter = new LinkRouter()
 var Links = Backbone.Collection.extend({
   model: app.Link,
 })
-app.Links = new Links()
+app.links = new Links()
+
+app.LinkView = Backbone.View.extend({
+  tagName: 'li',
+  template: _.template($('#link-template').html()),
+  initialize: function () {
+    this.listenTo(this.model, 'destroy', this.remove)
+  },
+  render: function () {
+    this.$el.html(this.template(this.model.toJSON()))
+    return this
+  }
+})
 
 app.AppView = Backbone.View.extend({
   el: '#linksapp',
   events: {
-    'keypress #newlink': 'createOnEnter',
+    'click #submit-control': 'createLink',
+    'keypress #url-control': 'createLinkOnEnter',
+  },
+  initialize: function () {
+    this.$title = this.$('#title-control')
+    this.$url = this.$('#url-control')
+    this.$main = this.$('#links-content')
+    this.$list = this.$('#links-list')
+    this.listenTo(app.links, 'all', this.render)
+    this.listenTo(app.links, 'add', this.addOne)
+  },
+  render: function () {
+  },
+  addOne: function (link) {
+    var view = new app.LinkView({model: link})
+    this.$list.append(view.render().el)
   },
   newAttributes: function () {
     return {
-      title: this.$input.val().trim(),
+      title: this.$title.val().trim(),
       url: this.$url.val().trim()
     }
   },
-  createOnEnter: function (e) {
-    if (e.which === ENTER_KEY && this.$input.val().trim()) {
+  hasData: function () {
+    return this.$title.val().trim() && this.$url.val().trim()
+  },
+  cleanup: function () {
+    this.$title.val('')
+    this.$url.val('')
+  },
+  createLink: function () {
+    if (this.hasData()) {
       app.links.create(this.newAttributes())
+      this.cleanup()
+    }
+  },
+  createLinkOnEnter: function(e) {
+    console.log(e.which === ENTER_KEY)
+    if (e.which === ENTER_KEY && this.hasData()) {
+      app.links.create(this.newAttributes())
+      this.cleanup()
     }
   }
 })
