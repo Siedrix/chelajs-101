@@ -1,11 +1,12 @@
 /* jshint asi:true */
 /* global Backbone, _ */
 
+'use strict';
+
 var app = window.app = {}
 var ENTER_KEY = 13
 
 $(function () {
-  'use strict';
   new app.AppView()
   Backbone.history.start()
 })
@@ -17,13 +18,12 @@ app.Link = Backbone.Model.extend({
   }
 })
 
-var LinkRouter = Backbone.Router.extend({
-  
-})
-app.LinkRouter = new LinkRouter()
+var LinkRouter = Backbone.Router.extend({})
+app.router = new LinkRouter()
 
 var Links = Backbone.Collection.extend({
   model: app.Link,
+  localStorage: new Backbone.LocalStorage('Link')
 })
 app.links = new Links()
 
@@ -34,6 +34,10 @@ app.LinkView = Backbone.View.extend({
     this.listenTo(this.model, 'destroy', this.remove)
   },
   render: function () {
+    // workaround para Backbone.localStorage
+    if (this.model.changed.id !== undefined) {
+      return this;
+    }
     this.$el.html(this.template(this.model.toJSON()))
     return this
   }
@@ -50,10 +54,18 @@ app.AppView = Backbone.View.extend({
     this.$url = this.$('#url-control')
     this.$main = this.$('#links-content')
     this.$list = this.$('#links-list')
-    this.listenTo(app.links, 'all', this.render)
+    this.listenTo(app.links, 'sync', this.render)
     this.listenTo(app.links, 'add', this.addOne)
+
+    app.links.fetch({reset: true})
   },
   render: function () {
+    this.$list.empty()
+    var self = this
+    app.links.each(function (link) {
+      var view = new app.LinkView({model: link})
+      self.$list.append(view.render().el)
+    })
   },
   addOne: function (link) {
     var view = new app.LinkView({model: link})
@@ -79,7 +91,6 @@ app.AppView = Backbone.View.extend({
     }
   },
   createLinkOnEnter: function(e) {
-    console.log(e.which === ENTER_KEY)
     if (e.which === ENTER_KEY && this.hasData()) {
       app.links.create(this.newAttributes())
       this.cleanup()

@@ -21,14 +21,13 @@
       <div class="row">
         <div id="links-content" class="col-md-8">
           <ul id="links-list">
-            
           </ul>
         </div>
         <div id="links-form" class="col-md-4">
           <h3>Agregar un Enlace</h3>
           <div class="form-group">
             <label for="title-control">Titulo</label>
-            <input type="text" id="title-control" class="form-control" placeholder="Titulo" />
+            <input type="text" id="title-control" class="form-control" placeholder="Titulo" focus />
           </div>
           <div class="form-group">
             <label for="url-control">URL</label>
@@ -39,13 +38,14 @@
       </div>
     </div>
     <script type="text/template" id="link-template">
-    <li><a href="<%- url %>"><%- title %></a></li>
+    <a href="<%- url %>"><%- title %></a>
     </script>
 
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/lib/jquery.min.js"></script>
     <script src="js/lib/underscore.min.js"></script>
     <script src="js/lib/backbone.min.js"></script>
+    <script src="js/lib/backbone.localStorage.min.js"></script>
     <script src="js/lib/bootstrap.min.js"></script>
     <script src="js/app.js"></script>
   </body>
