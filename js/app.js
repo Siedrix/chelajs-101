@@ -30,6 +30,9 @@ app.links = new Links()
 app.LinkView = Backbone.View.extend({
   tagName: 'li',
   template: _.template($('#link-template').html()),
+  events: {
+    'click .delete': 'removeItem',
+  },
   initialize: function () {
     this.listenTo(this.model, 'destroy', this.remove)
   },
@@ -40,6 +43,9 @@ app.LinkView = Backbone.View.extend({
     }
     this.$el.html(this.template(this.model.toJSON()))
     return this
+  },
+  removeItem: function() {
+    this.model.destroy()
   }
 })
 
@@ -47,7 +53,7 @@ app.AppView = Backbone.View.extend({
   el: '#linksapp',
   events: {
     'click #submit-control': 'createLink',
-    'keypress #url-control': 'createLinkOnEnter',
+    'keypress #url-control': 'createLinkOnEnter'
   },
   initialize: function () {
     this.$title = this.$('#title-control')
